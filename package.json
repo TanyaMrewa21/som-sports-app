@@ -1,0 +1,21 @@
+{
+    "name": "som-sports-app",
+    "version": "1.0.0",
+    "description": "Sports management application with customer and admin interfaces",
+    "main": "index.js",
+    "scripts": {
+      "dev": "vite",
+      "build": "vite build",
+      "preview": "vite preview"
+    },
+    "keywords": ["sports", "management", "supabase"],
+    "author": "Your Name",
+    "license": "MIT",
+    "devDependencies": {
+      "vite": "^4.4.0"
+    },
+    "dependencies": {
+      "@supabase/supabase-js": "^2.33.1"
+    }
+  }
+  

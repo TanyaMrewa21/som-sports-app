@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOM Sports - Book Sports Facilities</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary-color: #10b981;
+      --accent-color: #f59e0b;
+      --light-gray: #f8fafc;
+      --dark-gray: #64748b;
+      --darker-gray: #334155;
+      --error-color: #ef4444;
+      --success-color: #10b981;
+      --dark-bg: #0f172a;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--light-gray);
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Header Styles */
+    header {
+      background-color: var(--dark-bg);
+      color: white;
+      padding: 15px 0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 40px;
+      width: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(to right, #3b82f6, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: #e2e8f0;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      transition: var(--transition);
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Search and Categories */
+    .search-container {
+      display: flex;
+      gap: 15px;
+      margin: 30px 0;
+      max-width: 100%;
+    }
+
+    .location-input {
+      width: 250px;
+      position: relative;
+    }
+
+    .location-input input {
+      width: 100%;
+      padding: 14px 16px 14px 40px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .location-input input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .location-input i {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      color: var(--dark-gray);
+    }
+
+    .search-bar {
+      flex: 1;
+      display: flex;
+      min-width: 300px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px 0 0 8px;
+      font-size: 16px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-bar input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-bar button {
+      padding: 0 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .search-bar button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .categories {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      overflow-x: auto;
+      padding-bottom: 15px;
+      scrollbar-width: thin;
+    }
+
+    .categories::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .categories::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    .category {
+      padding: 10px 20px;
+      background-color: white;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 500;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .category:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .category.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    /* Facilities Grid */
+    .facilities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 30px;
+    }
+
+    .facility-card {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .facility-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .facility-image {
+      height: 180px;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .facility-details {
+      padding: 18px;
+    }
+
+    .facility-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .facility-location {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--dark-gray);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .facility-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .facility-price {
+      font-weight: 700;
+      color: var(--primary-color);
+      font-size: 16px;
+    }
+
+    .facility-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background-color: #f8fafc;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .facility-rating i {
+      color: var(--accent-color);
+    }
+
+    /* Favorite button */
+    .favorite-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      transition: var(--transition);
+    }
+
+    .favorite-btn i {
+      color: var(--error-color);
+      font-size: 18px;
+    }
+
+    .favorite-btn.active i {
+      color: var(--error-color);
+    }
+
+    .favorite-btn:not(.active) i {
+      color: var(--dark-gray);
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* Facility Page Styles */
+    .facility-page {
+      display: none;
+      padding: 20px;
+    }
+
+    .facility-page.active {
+      display: block;
+    }
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .facility-header {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .facility-gallery {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .main-image {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .thumbnail-container {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .thumbnail {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .thumbnail:hover {
+      transform: scale(1.05);
+    }
+
+    .facility-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .facility-page-title {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #1e293b;
+    }
+
+    .facility-page-location {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--dark-gray);
+      margin-bottom: 20px;
+    }
+
+    .facility-page-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background-color: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+
+    .facility-page-rating i {
+      color: var(--accent-color);
+    }
+
+    .facility-page-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    .facility-description {
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .facility-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .action-button {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .primary-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+
+    .primary-button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .secondary-button {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    .secondary-button:hover {
+      background-color: #f8fafc;
+    }
+
+    .facility-details-section {
+      margin-top: 40px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #1e293b;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background-color: var(--primary-color);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #f1f5f9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      transform: translateY(20px);
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--dark-gray);
+    }
+
+    .modal-form input,
+    .modal-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: var(--transition);
+    }
+
+    .modal-form input:focus,
+    .modal-form textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      outline: none;
+    }
+
+    .modal-form textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f8fafc;
+    }
+
+    /* Booking Card Styles */
+    .bookings-list {
+      margin-top: 20px;
+    }
+
+    .booking-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .booking-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .booking-info {
+      flex: 1;
+    }
+
+    .booking-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .booking-details {
+      color: var(--dark-gray);
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+    }
+
+    .booking-details strong {
+      font-weight: 500;
+    }
+
+    .booking-status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-confirmed {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-cancelled {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-completed {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .booking-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Account Section Styles */
+    .account-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: var(--card-shadow);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .account-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .account-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: var(--light-gray);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+      font-size: 32px;
+      color: var(--primary-color);
+    }
+
+    .account-name {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .account-email {
+      color: var(--dark-gray);
+    }
+
+    .account-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .account-detail {
+      margin-bottom: 15px;
+    }
+
+    .detail-label {
+      font-size: 14px;
+      color: var(--dark-gray);
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .account-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    /* Landing Page Styles */
+    .landing-hero {
+      background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+      border-radius: 12px;
+      margin-bottom: 40px;
+    }
+
+    .landing-hero h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .landing-hero p {
+      font-size: 20px;
+      max-width: 700px;
+      margin: 0 auto 30px;
+    }
+
+    .organizations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 30px;
+    }
+
+    .organization-card {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .organization-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .organization-image {
+      height: 180px;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .organization-details {
+      padding: 20px;
+    }
+
+    .organization-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .organization-location {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--dark-gray);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .search-container {
+        flex-direction: column;
+      }
+      
+      .location-input {
+        width: 100%;
+      }
+
+      .facility-header {
+        flex-direction: column;
+      }
+
+      .main-image {
+        height: 300px;
+      }
+
+      .booking-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .booking-actions {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .facilities-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+
+      .account-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .account-avatar {
+        margin-right: 0;
+        margin-bottom: 15px;
+      }
+
+      .account-actions {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .search-bar {
+        flex-direction: column;
+      }
+
+      .search-bar input {
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+
+      .search-bar button {
+        border-radius: 8px;
+        padding: 12px;
+        width: 100%;
+      }
+
+      .categories {
+        gap: 8px;
+      }
+
+      .category {
+        padding: 8px 16px;
+      }
+
+      .facility-actions {
+        flex-direction: column;
+      }
+
+      .booking-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .booking-actions button {
+        width: 100%;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .facility-card {
+      animation: fadeIn 0.3s ease-out forwards;
+      opacity: 0;
+    }
+
+    .facility-card:nth-child(1) { animation-delay: 0.1s; }
+    .facility-card:nth-child(2) { animation-delay: 0.2s; }
+    .facility-card:nth-child(3) { animation-delay: 0.3s; }
+    .facility-card:nth-child(4) { animation-delay: 0.4s; }
+    .facility-card:nth-child(5) { animation-delay: 0.5s; }
+    .facility-card:nth-child(6) { animation-delay: 0.6s; }
+
+    /* Loading spinner */
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary-color);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <img src="https://placehold.co/40x40/2563eb/ffffff?text=SOM" alt="SOM Sports Logo" />
+        <h1 id="org-name">SOM Rezervacije</h1>
+      </a>
+      <div class="nav-links">
+        <a href="#home" class="nav-link active" data-section="home">
+          <i class="fas fa-home"></i> <span class="nav-text">Home</span>
+        </a>
+        <a href="#bookings" class="nav-link" data-section="bookings">
+          <i class="fas fa-calendar-alt"></i> <span class="nav-text">Bookings</span>
+        </a>
+        <a href="#favorites" class="nav-link" data-section="favorites">
+          <i class="fas fa-heart"></i> <span class="nav-text">Favorites</span>
+        </a>
+        <a href="#account" class="nav-link" data-section="account">
+          <i class="fas fa-user"></i> <span class="nav-text">Account</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Landing Page (when no organization specified) -->
+    <div class="section active" id="landing-section">
+      <div class="landing-hero">
+        <h1>SOM Sports Booking Platform</h1>
+        <p>Rezervirajte sportske objekte i terene u Hrvatskoj - brzo, jednostavno i pouzdano</p>
+        <button class="action-button primary-button" onclick="scrollToOrganizations()">
+          <i class="fas fa-search"></i> Pronađi objekte
+        </button>
+      </div>
+
+      <h2 class="section-title">Popularni sportski centri</h2>
+      <div class="organizations-grid" id="organizations-grid">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Home Section (when organization is specified) -->
+    <div class="section" id="home-section">
+      <div class="search-container">
+        <div class="location-input">
+          <i class="fas fa-map-marker-alt"></i>
+          <input type="text" id="location-input" placeholder="Enter your location">
+        </div>
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search for sports facilities, clubs...">
+          <button onclick="searchFacilities()"><i class="fas fa-search"></i> Search</button>
+        </div>
+      </div>
+
+      <div class="categories">
+        <div class="category active" data-category="all">All</div>
+        <div class="category" data-category="sports">Sports</div>
+        <div class="category" data-category="gyms">Gyms</div>
+        <div class="category" data-category="swimming">Swimming Pools</div>
+        <div class="category" data-category="tennis">Tennis Courts</div>
+        <div class="category" data-category="football">Football Fields</div>
+        <div class="category" data-category="basketball">Basketball Courts</div>
+        <div class="category" data-category="yoga">Yoga Studios</div>
+      </div>
+
+      <div class="facilities-grid" id="facilities-grid">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <!-- Facility Page Section -->
+    <div class="facility-page" id="facility-page">
+      <button class="back-button" onclick="goBackToList()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to list</span>
+      </button>
+      
+      <div class="facility-header">
+        <div class="facility-gallery">
+          <img id="main-image" src="" alt="Facility image" class="main-image">
+          <div class="thumbnail-container" id="thumbnail-container">
+            <!-- Thumbnails will be added here -->
+          </div>
+        </div>
+        
+        <div class="facility-info">
+          <h1 class="facility-page-title" id="facility-page-title"></h1>
+          <div class="facility-page-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="facility-page-location"></span>
+          </div>
+          <div class="facility-page-price" id="facility-page-price"></div>
+          
+          <p class="facility-description" id="facility-description"></p>
+          
+          <div class="facility-actions">
+            <button class="action-button primary-button" onclick="openBookingModal()">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Book Now</span>
+            </button>
+            <button class="action-button secondary-button" id="favorite-button" onclick="toggleFavorite()">
+              <i class="fas fa-heart"></i>
+              <span id="favorite-text">Add to Favorites</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="facility-details-section">
+        <h2 class="section-title">Facility Details</h2>
+        
+        <div class="details-grid">
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h3>Opening Hours</h3>
+              <p id="opening-hours">Mon-Fri: 6:00 AM - 10:00 PM<br>Sat-Sun: 8:00 AM - 8:00 PM</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-phone"></i>
+            </div>
+            <div>
+              <h3>Contact</h3>
+              <p id="contact-info">+385 1 2345 678<br>info@facility.com</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div>
+              <h3>Address</h3>
+              <p id="address-info">123 Fitness Street, Zagreb, Croatia</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h3>Facility Type</h3>
+              <p id="facility-type">Gym & Fitness Center</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings Section -->
+    <div class="section" id="bookings-section">
+      <h2>Your Bookings</h2>
+      <div class="bookings-list" id="bookings-list">
+        <p>No bookings yet. Book a facility to get started.</p>
+      </div>
+    </div>
+
+    <!-- Favorites Section -->
+    <div class="section" id="favorites-section">
+      <h2>Your Favorites</h2>
+      <div class="facilities-grid" id="favorites-grid">
+        <p>No favorites yet. Click the heart icon on facilities to add them to favorites.</p>
+      </div>
+    </div>
+
+    <!-- Account Section -->
+    <div class="section" id="account-section">
+      <h2>Your Account</h2>
+      <div class="account-card">
+        <div class="account-header">
+          <div class="account-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <h3 class="account-name" id="account-name">Guest User</h3>
+            <p class="account-email" id="account-email">guest@example.com</p>
+          </div>
+        </div>
+        
+        <div class="account-details">
+          <div class="account-detail">
+            <div class="detail-label">Membership</div>
+            <div class="detail-value" id="membership-status">Guest</div>
+          </div>
+          <div class="account-detail">
+            <div class="detail-label">Bookings</div>
+            <div class="detail-value" id="total-bookings">0</div>
+          </div>
+          <div class="account-detail">
+            <div class="detail-label">Favorites</div>
+            <div class="detail-value" id="favorites-count">0</div>
+          </div>
+        </div>
+        
+        <h3 class="section-title">Account Settings</h3>
+        
+        <div class="account-actions">
+          <button class="action-button secondary-button" onclick="showLoginModal()">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Login / Register</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Modal -->
+  <div class="modal-overlay" id="booking-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Book a Session</h3>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+      <form class="modal-form" id="bookingForm">
+        <input type="text" placeholder="Your Name" required id="booking-name">
+        <input type="email" placeholder="Your Email" required id="booking-email">
+        <input type="tel" placeholder="Your Phone" id="booking-phone">
+        <div style="display: flex; gap: 10px;">
+          <input type="date" id="booking-date" required style="flex: 1;">
+          <input type="time" id="booking-time" required style="flex: 1;">
+        </div>
+        <textarea placeholder="Additional notes..." id="booking-notes"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Login / Register</h3>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+      <form class="modal-form" id="loginForm">
+        <input type="email" placeholder="Your Email" required id="login-email">
+        <input type="password" placeholder="Password" required id="login-password">
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </div>
+        <p style="text-align: center; margin-top: 15px;">
+          Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a>
+        </p>
+      </form>
+
+      <form class="modal-form" id="registerForm" style="display: none;">
+        <input type="text" placeholder="Full Name" required id="register-name">
+        <input type="email" placeholder="Your Email" required id="register-email">
+        <input type="password" placeholder="Password" required id="register-password">
+        <input type="password" placeholder="Confirm Password" required id="register-confirm">
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="showLoginForm()">Back to Login</button>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Supabase
+    const SUPABASE_URL = 'https://pytpbjmjqivciabazaxo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHBiam1qcWl2Y2lhYmF6YXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NTY3MDAsImV4cCI6MjA3MjAzMjcwMH0.bMEBfpUoWOY2xFuLya0uF0m0vh17Z2j-9YuGbzvMnXQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Application State
+    const state = {
+      currentSection: 'home',
+      currentOrganization: null,
+      currentFacility: null,
+      facilities: [],
+      organizations: [],
+      favorites: JSON.parse(localStorage.getItem('favorites')) || [],
+      bookings: JSON.parse(localStorage.getItem('bookings')) || [],
+      user: JSON.parse(localStorage.getItem('user')) || null
+    };
+
+    // Initialize the application
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadOrganizations();
+      setupNavigation();
+      updateUserInfo();
+      
+      // Check URL for organization and facility
+      const path = window.location.pathname.split('/').filter(p => p);
+      
+      if (path.length === 0) {
+        // Show landing page
+        showSection('landing');
+      } else if (path.length === 1) {
+        // Show organization page
+        const orgSlug = path[0];
+        await loadOrganization(orgSlug);
+      } else if (path.length === 2) {
+        // Show specific facility
+        const orgSlug = path[0];
+        const facilitySlug = path[1];
+        await loadOrganization(orgSlug);
+        await showFacilityBySlug(facilitySlug);
+      }
+    });
+
+    // Load all organizations for landing page
+    async function loadOrganizations() {
+      try {
+        const { data, error } = await supabase
+          .from('organizations')
+          .select('*');
+          
+        if (error) throw error;
+        
+        state.organizations = data;
+        renderOrganizations();
+      } catch (error) {
+        console.error('Error loading organizations:', error);
+      }
+    }
+
+    // Render organizations on landing page
+    function renderOrganizations() {
+      const grid = document.getElementById('organizations-grid');
+      
+      if (state.organizations.length === 0) {
+        grid.innerHTML = '<p>No organizations found.</p>';
+        return;
+      }
+      
+      grid.innerHTML = state.organizations.map(org => `
+        <div class="organization-card" onclick="window.location.href='/${org.slug}'">
+          <img src="https://placehold.co/600x400/2563eb/ffffff?text=${encodeURIComponent(org.name)}" alt="${org.name}" class="organization-image">
+          <div class="organization-details">
+            <h3 class="organization-name">${org.name}</h3>
+            <div class="organization-location">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>${org.address || 'Croatia'}</span>
+            </div>
+            <button class="action-button primary-button" style="width: 100%;">
+              View Facilities
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load a specific organization
+    async function loadOrganization(slug) {
+      try {
+        const { data, error } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+          
+        if (error) throw error;
+        
+        state.currentOrganization = data;
+        document.getElementById('org-name').textContent = data.name;
+        await loadFacilities(data.id);
+        showSection('home');
+      } catch (error) {
+        console.error('Error loading organization:', error);
+        // Redirect to landing page if organization not found
+        window.location.href = '/';
+      }
+    }
+
+    // Load facilities for current organization
+    async function loadFacilities(orgId) {
+      try {
+        const { data, error } = await supabase
+          .from('facilities')
+          .select('*')
+          .eq('organization_id', orgId);
+          
+        if (error) throw error;
+        
+        state.facilities = data;
+        renderFacilities();
+      } catch (error) {
+        console.error('Error loading facilities:', error);
+      }
+    }
+
+    // Render facilities in the home section
+    function renderFacilities() {
+      const grid = document.getElementById('facilities-grid');
+      
+      if (state.facilities.length === 0) {
+        grid.innerHTML = '<p>No facilities found for this organization.</p>';
+        return;
+      }
+      
+      grid.innerHTML = state.facilities.map(facility => {
+        const isFavorite = state.favorites.includes(facility.id);
+        
+        return `
+          <div class="facility-card" onclick="showFacility('${facility.id}')">
+            <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${facility.id}')">
+              <i class="fas fa-heart"></i>
+            </button>
+            <img src="${facility.images && facility.images.length > 0 ? facility.images[0] : 'https://placehold.co/600x400/2563eb/ffffff?text=' + encodeURIComponent(facility.name)}" alt="${facility.name}" class="facility-image">
+            <div class="facility-details">
+              <h3 class="facility-title">${facility.name}</h3>
+              <div class="facility-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${state.currentOrganization.address || 'Croatia'}</span>
+              </div>
+              <div class="facility-meta">
+                <div class="facility-price">From ${facility.price}€/hr</div>
+                <div class="facility-rating">
+                  <i class="fas fa-star"></i>
+                  <span>4.8</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Show facility details
+    async function showFacility(id) {
+      try {
+        const { data, error } = await supabase
+          .from('facilities')
+          .select('*')
+          .eq('id', id)
+          .single();
+          
+        if (error) throw error;
+        
+        state.currentFacility = data;
+        
+        // Update URL
+        window.history.pushState(null, '', `/${state.currentOrganization.slug}/${data.slug}`);
+        
+        // Update facility page content
+        document.getElementById('facility-page-title').textContent = data.name;
+        document.getElementById('facility-page-location').textContent = state.currentOrganization.address;
+        document.getElementById('facility-page-price').textContent = `From ${data.price}€/hr`;
+        document.getElementById('facility-description').textContent = data.description || 'No description available.';
+        document.getElementById('address-info').textContent = state.currentOrganization.address;
+        document.getElementById('contact-info').textContent = `${state.currentOrganization.contact_phone || ''}\n${state.currentOrganization.contact_email || ''}`;
+        document.getElementById('facility-type').textContent = data.category || 'Sports Facility';
+        
+        // Set images
+        const mainImage = document.getElementById('main-image');
+        const thumbnailContainer = document.getElementById('thumbnail-container');
+        
+        if (data.images && data.images.length > 0) {
+          mainImage.src = data.images[0];
+          thumbnailContainer.innerHTML = data.images.map(img => `
+            <img src="${img}" alt="Thumbnail" class="thumbnail" onclick="document.getElementById('main-image').src='${img}'">
+          `).join('');
+        } else {
+          mainImage.src = `https://placehold.co/800x600/2563eb/ffffff?text=${encodeURIComponent(data.name)}`;
+          thumbnailContainer.innerHTML = '';
+        }
+        
+        // Update favorite button
+        const isFavorite = state.favorites.includes(data.id);
+        document.getElementById('favorite-text').textContent = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+        document.getElementById('favorite-button').classList.toggle('active', isFavorite);
+        
+        // Show facility page
+        document.getElementById('home-section').classList.remove('active');
+        document.getElementById('facility-page').classList.add('active');
+      } catch (error) {
+        console.error('Error loading facility:', error);
+      }
+    }
+
+    // Show facility by slug
+    async function showFacilityBySlug(slug) {
+      try {
+        const { data, error } = await supabase
+          .from('facilities')
+          .select('*')
+          .eq('slug', slug)
+          .eq('organization_id', state.currentOrganization.id)
+          .single();
+          
+        if (error) throw error;
+        
+        await showFacility(data.id);
+      } catch (error) {
+        console.error('Error loading facility by slug:', error);
+      }
+    }
+
+    // Go back to facilities list
+    function goBackToList() {
+      document.getElementById('facility-page').classList.remove('active');
+      document.getElementById('home-section').classList.add('active');
+      window.history.pushState(null, '', `/${state.currentOrganization.slug}`);
+    }
+
+    // Toggle favorite status
+    function toggleFavorite(facilityId) {
+      if (!facilityId && state.currentFacility) {
+        facilityId = state.currentFacility.id;
+      }
+      
+      const index = state.favorites.indexOf(facilityId);
+      
+      if (index === -1) {
+        // Add to favorites
+        state.favorites.push(facilityId);
+      } else {
+        // Remove from favorites
+        state.favorites.splice(index, 1);
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('favorites', JSON.stringify(state.favorites));
+      
+      // Update UI
+      if (document.getElementById('home-section').classList.contains('active')) {
+        renderFacilities();
+      }
+      
+      // Update account info
+      updateUserInfo();
+      
+      // If we're on the facility page, update the favorite button
+      if (document.getElementById('facility-page').classList.contains('active')) {
+        const isFavorite = state.favorites.includes(facilityId);
+        document.getElementById('favorite-text').textContent = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+        document.getElementById('favorite-button').classList.toggle('active', isFavorite);
+      }
+    }
+
+    // Navigation functionality
+    function setupNavigation() {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const section = this.getAttribute('data-section');
+          showSection(section);
+        });
+      });
+    }
+
+    // Show specific section
+    function showSection(section) {
+      // Hide facility page if it's open
+      document.getElementById('facility-page').classList.remove('active');
+      
+      // Update active nav link
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-section') === section) {
+          link.classList.add('active');
+        }
+      });
+      
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(sec => {
+        sec.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById(`${section}-section`).classList.add('active');
+      state.currentSection = section;
+      
+      // Load section-specific data
+      if (section === 'favorites') {
+        renderFavorites();
+      } else if (section === 'bookings') {
+        renderBookings();
+      }
+    }
+
+    // Render favorites in the favorites section
+    function renderFavorites() {
+      const grid = document.getElementById('favorites-grid');
+      
+      if (state.favorites.length === 0) {
+        grid.innerHTML = '<p>No favorites yet. Click the heart icon on facilities to add them to favorites.</p>';
+        return;
+      }
+      
+      // Filter facilities to only show favorites
+      const favoriteFacilities = state.facilities.filter(f => state.favorites.includes(f.id));
+      
+      if (favoriteFacilities.length === 0) {
+        grid.innerHTML = '<p>No favorites found for this organization.</p>';
+        return;
+      }
+      
+      grid.innerHTML = favoriteFacilities.map(facility => `
+        <div class="facility-card" onclick="showFacility('${facility.id}')">
+          <button class="favorite-btn active" onclick="event.stopPropagation(); toggleFavorite('${facility.id}')">
+            <i class="fas fa-heart"></i>
+          </button>
+          <img src="${facility.images && facility.images.length > 0 ? facility.images[0] : 'https://placehold.co/600x400/2563eb/ffffff?text=' + encodeURIComponent(facility.name)}" alt="${facility.name}" class="facility-image">
+          <div class="facility-details">
+            <h3 class="facility-title">${facility.name}</h3>
+            <div class="facility-location">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>${state.currentOrganization.address || 'Croatia'}</span>
+            </div>
+            <div class="facility-meta">
+              <div class="facility-price">From ${facility.price}€/hr</div>
+              <div class="facility-rating">
+                <i class="fas fa-star"></i>
+                <span>4.8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render bookings in the bookings section
+    function renderBookings() {
+      const list = document.getElementById('bookings-list');
+      
+      if (state.bookings.length === 0) {
+        list.innerHTML = '<p>No bookings yet. Book a facility to get started.</p>';
+        return;
+      }
+      
+      list.innerHTML = state.bookings.map(booking => {
+        const facility = state.facilities.find(f => f.id === booking.facilityId) || { name: 'Unknown Facility' };
+        const date = new Date(booking.datetime);
+        
+        return `
+          <div class="booking-card">
+            <div class="booking-info">
+              <h4 class="booking-title">${facility.name}</h4>
+              <div class="booking-details">
+                <div><strong>Date & Time:</strong> ${date.toLocaleString()}</div>
+                <div><strong>Name:</strong> ${booking.name}</div>
+              </div>
+              <div class="booking-status status-${booking.status}">
+                ${booking.status}
+              </div>
+            </div>
+            <div class="booking-actions">
+              <button class="action-button secondary-button" onclick="cancelBooking('${booking.id}')">
+                <i class="fas fa-times"></i> Cancel Booking
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update user information
+    function updateUserInfo() {
+      if (state.user) {
+        document.getElementById('account-name').textContent = state.user.name;
+        document.getElementById('account-email').textContent = state.user.email;
+        document.getElementById('membership-status').textContent = 'Registered User';
+      } else {
+        document.getElementById('account-name').textContent = 'Guest User';
+        document.getElementById('account-email').textContent = 'guest@example.com';
+        document.getElementById('membership-status').textContent = 'Guest';
+      }
+      
+      document.getElementById('total-bookings').textContent = state.bookings.length;
+      document.getElementById('favorites-count').textContent = state.favorites.length;
+    }
+
+    // Modal functionality
+    function openBookingModal() {
+      document.getElementById('booking-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Set default values
+      if (state.user) {
+        document.getElementById('booking-name').value = state.user.name;
+        document.getElementById('booking-email').value = state.user.email;
+      }
+    }
+
+    function showLoginModal() {
+      document.getElementById('login-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function showLoginForm() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+    }
+
+    function showRegisterForm() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.classList.remove('active');
+      });
+      document.body.style.overflow = 'auto';
+    }
+
+    // Form submission
+    document.getElementById("bookingForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      
+      if (!state.currentFacility) return;
+      
+      const bookingData = {
+        facilityId: state.currentFacility.id,
+        name: document.getElementById('booking-name').value,
+        email: document.getElementById('booking-email').value,
+        phone: document.getElementById('booking-phone').value,
+        date: document.getElementById('booking-date').value,
+        time: document.getElementById('booking-time').value,
+        datetime: new Date(`${document.getElementById('booking-date').value}T${document.getElementById('booking-time').value}`),
+        notes: document.getElementById('booking-notes').value,
+        status: 'confirmed',
+        id: Date.now().toString()
+      };
+      
+      // Save to state and localStorage
+      state.bookings.push(bookingData);
+      localStorage.setItem('bookings', JSON.stringify(state.bookings));
+      
+      // In a real app, you would save to Supabase here
+      try {
+        const { data, error } = await supabase
+          .from('bookings')
+          .insert([
+            {
+              facility_id: state.currentFacility.id,
+              customer_name: bookingData.name,
+              customer_email: bookingData.email,
+              customer_phone: bookingData.phone,
+              start_time: bookingData.datetime.toISOString(),
+              end_time: new Date(bookingData.datetime.getTime() + 60*60*1000).toISOString(), // 1 hour booking
+              notes: bookingData.notes,
+              status: 'confirmed'
+            }
+          ]);
+          
+        if (error) throw error;
+        
+        alert('Booking confirmed! Check your email for details.');
+      } catch (error) {
+        console.error('Error saving booking:', error);
+        alert('There was an error saving your booking. Please try again.');
+      }
+      
+      closeModal();
+      updateUserInfo();
+    });
+
+    // Login form submission
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      // In a real app, you would authenticate with Supabase Auth here
+      // For this demo, we'll just simulate a login
+      state.user = {
+        name: email.split('@')[0],
+        email: email
+      };
+      
+      localStorage.setItem('user', JSON.stringify(state.user));
+      updateUserInfo();
+      closeModal();
+      
+      alert('Login successful!');
+    });
+
+    // Register form submission
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('register-name').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const confirm = document.getElementById('register-confirm').value;
+      
+      if (password !== confirm) {
+        alert('Passwords do not match!');
+        return;
+      }
+      
+      // In a real app, you would register with Supabase Auth here
+      state.user = {
+        name: name,
+        email: email
+      };
+      
+      localStorage.setItem('user', JSON.stringify(state.user));
+      updateUserInfo();
+      closeModal();
+      
+      alert('Registration successful! You are now logged in.');
+    });
+
+    // Cancel a booking
+    function cancelBooking(bookingId) {
+      if (confirm('Are you sure you want to cancel this booking?')) {
+        const index = state.bookings.findIndex(b => b.id === bookingId);
+        if (index !== -1) {
+          state.bookings.splice(index, 1);
+          localStorage.setItem('bookings', JSON.stringify(state.bookings));
+          renderBookings();
+          updateUserInfo();
+          alert('Booking cancelled successfully.');
+        }
+      }
+    }
+
+    // Search facilities
+    function searchFacilities() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const filteredFacilities = state.facilities.filter(f => 
+        f.name.toLowerCase().includes(searchTerm) || 
+        (f.description && f.description.toLowerCase().includes(searchTerm))
+      );
+      
+      const grid = document.getElementById('facilities-grid');
+      
+      if (filteredFacilities.length === 0) {
+        grid.innerHTML = '<p>No facilities found matching your search.</p>';
+        return;
+      }
+      
+      grid.innerHTML = filteredFacilities.map(facility => {
+        const isFavorite = state.favorites.includes(facility.id);
+        
+        return `
+          <div class="facility-card" onclick="showFacility('${facility.id}')">
+            <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${facility.id}')">
+              <i class="fas fa-heart"></i>
+            </button>
+            <img src="${facility.images && facility.images.length > 0 ? facility.images[0] : 'https://placehold.co/600x400/2563eb/ffffff?text=' + encodeURIComponent(facility.name)}" alt="${facility.name}" class="facility-image">
+            <div class="facility-details">
+              <h3 class="facility-title">${facility.name}</h3>
+              <div class="facility-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${state.currentOrganization.address || 'Croatia'}</span>
+              </div>
+              <div class="facility-meta">
+                <div class="facility-price">From ${facility.price}€/hr</div>
+                <div class="facility-rating">
+                  <i class="fas fa-star"></i>
+                  <span>4.8</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Category filtering
+    document.querySelectorAll('.category').forEach(category => {
+      category.addEventListener('click', function() {
+        document.querySelector('.category.active').classList.remove('active');
+        this.classList.add('active');
+        
+        const categoryName = this.getAttribute('data-category');
+        
+        if (categoryName === 'all') {
+          renderFacilities();
+          return;
+        }
+        
+        const filteredFacilities = state.facilities.filter(f => 
+          f.category && f.category.toLowerCase() === categoryName
+        );
+        
+        const grid = document.getElementById('facilities-grid');
+        
+        if (filteredFacilities.length === 0) {
+          grid.innerHTML = `<p>No ${categoryName} facilities found.</p>`;
+          return;
+        }
+        
+        grid.innerHTML = filteredFacilities.map(facility => {
+          const isFavorite = state.favorites.includes(facility.id);
+          
+          return `
+            <div class="facility-card" onclick="showFacility('${facility.id}')">
+              <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${facility.id}')">
+                <i class="fas fa-heart"></i>
+              </button>
+              <img src="${facility.images && facility.images.length > 0 ? facility.images[0] : 'https://placehold.co/600x400/2563eb/ffffff?text=' + encodeURIComponent(facility.name)}" alt="${facility.name}" class="facility-image">
+              <div class="facility-details">
+                <h3 class="facility-title">${facility.name}</h3>
+                <div class="facility-location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>${state.currentOrganization.address || 'Croatia'}</span>
+                </div>
+                <div class="facility-meta">
+                  <div class="facility-price">From ${facility.price}€/hr</div>
+                  <div class="facility-rating">
+                    <i class="fas fa-star"></i>
+                    <span>4.8</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      });
+    });
+
+    // Scroll to organizations on landing page
+    function scrollToOrganizations() {
+      document.getElementById('organizations-grid').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
